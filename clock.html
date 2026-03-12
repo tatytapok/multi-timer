@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>clock</title>
+</head>
+<body>
+    <div class="container">
+        <div class ="secondary-container">    
+            <div class=" clock timer">
+                <div class="progress timer-progress-bar"></div>
+                <div class="face">
+                    <div class="name glass" data-text="Timer">Timer</div>
+                <button class="timer-start">Start</button>
+                </div>
+            </div>
+            <div class = "display timer-display">00:00:00</div>
+        </div>
+
+
+    <div class="clock watch">
+        <div class="face">
+            <div class="center"></div>
+            <div class="hand hour-hand"></div>
+            <div class="hand min-hand"></div>
+            <div class="hand second-hand"></div>
+
+        </div>
+    </div>
+
+
+    <div class ="secondary-container">  
+        <div class="clock stopwatch">
+            <div class="progress stopwatch-progress-bar"></div>
+                <div class="face">
+                    <div class="name glass" data-text="Stopwatch">Stopwatch</div>
+                    <button class="stopwatch-start" >Start</button>
+                </div> 
+            </div>
+            <div class = "display stopwatch-display">00:00:00</div>
+        </div>
+        
+   
+    <!-- Добавим звук секундной стрелке -->
+    <audio class="tick" src="./dassda67.mp3" preload="auto" ></audio>
+    <script src="./clock.js"></script>
+
+</body>
+</html>

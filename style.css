@@ -1,0 +1,190 @@
+:root {
+    --timer-gradient: linear-gradient(214deg,rgba(69, 143, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
+    --stopwatch-gradient: linear-gradient(214deg,rgba(255, 0, 0, 1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+/*=== ОПРЕДЕЛЕНИЕ ШРИФТОВ ===*/
+@font-face {
+    font-family: "EV Hater";
+    src: url(./EV_Hater.ttf) format('truetype');
+}
+html{
+            background: #000;
+            font-family: 'EV Hater';
+            text-align: center;
+            font-size: 10px;
+        }
+
+.glass{
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.4),
+        inset 0 1px rgba(255,255,255,0.2);
+}
+
+        body{
+            margin:0;
+            font-size: 2rem;
+            display: flex;
+            flex:1;
+           
+            
+            min-height: 100vh;
+            align-items: center;
+        }
+        .container{
+             width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .clock{
+            width: 40rem;
+            height: 40rem;
+            border:5px solid white;
+            border-radius: 50%;
+           
+            position: relative;
+            padding:2rem;
+            box-shadow:
+                0 0 0 4px rgba(0,0,0,0.1),
+                inset 0 0 0 3px #EFEFEF,
+                inset 0 0 10px black,
+                0 0 10px rgba(0,0,0,0.2);       
+        }
+
+
+    .progress {
+        position: absolute;  
+        top: -17px;           
+        left: -17px;          
+        right: -17px;         
+        bottom: -17px; 
+
+        border: 7px solid;
+        border-radius: 50%;  
+
+        transform: rotate(-45deg);  
+        pointer-events: none;  
+    }
+
+    .timer-progress-bar{
+        border-color: rgb(47,123,255);
+    }
+    
+    .stopwatch-progress-bar{
+        border-color: rgb(217, 32, 59);
+    }
+
+    .secondary-container{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .display{
+        font-size: 8rem;
+        color: white;
+        line-height: 1; /*Уменьшает высоту линии*/
+        border: 1px solid white;
+        padding: 5px  20px;
+        border-radius: 20px;  
+    }
+        
+        .face{
+            position: relative;
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center ;
+            justify-content: center;
+            gap: 2rem;
+            
+        }
+
+        .hand{
+           
+            background: white;
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+
+            transform-origin: 0% 50%;
+            transform: translate(-100%, -50%) rotate(90deg);
+            transition: all 0.05s;
+            transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
+            border-radius: 3px;
+        }
+
+        .second-hand{
+            width: 45%;
+            height: 2px;
+        }
+        .hour-hand{
+            width: 30%;
+            height: 6px;
+        }
+        .min-hand{
+            width: 40%;
+            height: 3px;
+        }
+        .center{
+            width: 12px;
+            height: 12px;
+            background: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+button{
+    padding: 3px 40px;
+    line-height: 1; /*Уменьшает высоту линии*/
+    
+    font-family: 'EV Hater';
+    font-size: 9.5rem;
+    
+    color: white;
+    background: transparent;
+    
+    border: 2px solid white;
+    border-radius: 20px;
+    
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+button:hover {
+    background-color: rgba(255, 255, 255, 0.326);
+    color: black;
+}
+.name{
+    padding: 5px 20px;
+    font-size: 3rem;
+    color: white;
+    letter-spacing: 13px;
+    z-index: 1;
+}
+.name::before{
+    content: attr(data-text);
+
+    position: absolute;
+    inset: 0;
+
+    filter: blur(1rem);
+    color: white;
+
+    z-index: -1;
+}
