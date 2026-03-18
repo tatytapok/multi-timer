@@ -1,15 +1,36 @@
  const audio = document.querySelector('audio')
         audio.volume = 0.1;
-const secondHand = document.querySelector('.second-hand');
-const minsHand = document.querySelector('.min-hand')
-const hoursHand = document.querySelector('.hour-hand')
+let secondHand = document.querySelector('.second-hand');
+let minsHand = document.querySelector('.min-hand')
+let hoursHand = document.querySelector('.hour-hand')
 const stopwatchButton = document.querySelector('.stopwatch-start')
 const timerButton = document.querySelector('.timer-start')
 const stopwatchDisplay = document.querySelector('.stopwatch-display')
+const timerDisplay = document.querySelector('.timer-display')
+const clockFace = document.querySelector('.clock-face')
 let interval = null
 let isRuning = false
 let startTime =0
 let progress =0
+let analogTime= null
+let isAnalogMode = true // по умолчанию аналоговые часы
+
+function startAnalogClock(){
+    if(analogTime)clearInterval(analogTime)
+        analogTime= setInterval(setDate, 1000)
+        setDate()
+
+}
+
+function stopAnalogClock(){
+    if (analogTime){
+        clearInterval(analogTime)
+        analogTime = null
+    }
+}
+
+startAnalogClock()
+
 function setDate(){
     const now = new Date();
 
@@ -43,6 +64,83 @@ function setDate(){
 setInterval(setDate, 1000);
 
 setDate();
+let isDigitalMode = false
+let digitalTime = null
+
+function modernClock(){
+
+    console.log('this is future')
+    if(!isDigitalMode){
+        // сохраняем html кконтент для  clock-face 
+        if(!clockFace.hasAttribute('data-original-content')){
+            clockFace.setAttribute('data-original-content', clockFace.innerHTML)
+        }
+
+        //stop analog clock
+
+        stopAnalogClock()
+
+
+
+    //контейнер для диджитал циферблата 
+    const digitalContent = document.createElement('div')
+    digitalContent.className = 'digital-content'
+
+    //дисплей 
+    const clockDisplay = document.createElement('div')
+    clockDisplay.className= 'display clock-display'
+
+    //clock name
+    const clockName = document.createElement('div')
+    clockName.className = 'clock-name name glass'
+
+    // доб. эл-ты в контейнер 
+    digitalContent.appendChild(clockDisplay)
+    digitalContent.appendChild(clockName)
+
+    clockFace.innerHTML = '';
+    clockFace.appendChild(digitalContent)
+
+    setDigitalClock(clockDisplay)
+    digitalTime = setInterval(()=> setDigitalClock(clockDisplay),1000)
+
+    isDigitalMode = true
+    } else{
+
+        if(digitalTime){
+            clearInterval(digitalTime)
+            digitalTime = null
+        }
+
+
+
+        //возвращ. содержимоет ориг. 
+        const originalContent = clockFace.getAttribute('data-original-content')
+        if (originalContent){
+            clockFace.innerHTML = originalContent
+
+            secondHand = document.querySelector('.second-hand');
+            minsHand = document.querySelector('.min-hand');
+            hoursHand = document.querySelector('.hour-hand');
+
+        }
+
+        startAnalogClock()
+
+        isDigitalMode = false
+    }
+}
+
+function setDigitalClock(displayElement){
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2,'0')
+    const minutes = String(now.getMinutes()).padStart(2,'0')
+    const seconds = String(now.getSeconds()).padStart(2,'0')
+
+    displayElement.textContent = `${hours}:${minutes}:${seconds}`
+}
+
+
 
 function updateDisplay(ms){
     console.log('display')
@@ -59,7 +157,9 @@ function setTimer(){
     console.log("timer")
 
 }
-
+function timerProgress(){
+    console.log("progress")
+}
 function setStopwatch(){
         startTime = Date.now()
 
@@ -74,14 +174,14 @@ function stopwatchProgress(){
 
 }
 
-function reset(){
+function reset(display, button){
     isRuning= false
 
     clearInterval(interval)
     interval=null
 
-    stopwatchDisplay.textContent= '00:00:00'
-    stopwatchButton.textContent ='Start'
+    display.textContent= '00:00:00'
+    button.textContent ='Start'
 
     progress =0
 }
@@ -92,8 +192,19 @@ stopwatchButton.addEventListener('click',() =>{
         setStopwatch() 
         stopwatchProgress()
     }else{
-         reset()
+         reset(stopwatchDisplay, stopwatchButton)
     }
 })
 
-timerButton.addEventListener('click',setTimer)
+timerButton.addEventListener('click',()=>{
+    if(!isRuning){
+        isRuning =true
+        timerButton.textContent = 'Stop'
+        setTimer()
+        timerProgress()
+    }else{
+        reset(timerDisplay, timerButton)
+    }
+})
+
+clockFace.addEventListener('click', modernClock)
