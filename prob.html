@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <progress id="countdown" value="10" max="10"></progress> <!-- Прогресс заполнения -->
+    
+    <script>
+    let time = 10; // Начинаем с 10
+    const timer = setInterval(() => {
+    const countdownElement = document.getElementById('countdown'); // Наблюдаем за полосой прогресса
+    if(time >= 0) {
+        countdownElement.value = time--; // Заполняем полосу прогресса
+    } else {
+        clearInterval(timer); // Полностью останавливаем таймер
+        countdownElement.textContent = 'Отсчёт завершён!'; // Сообщение о завершении
+    }
+    }, 1000);
+    </script>
+
+
+</body>
+</html>

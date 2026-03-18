@@ -117,17 +117,18 @@ html{
 
             position: absolute;
             top: 50%;
-            left: 50%;
-
-            transform-origin: 0% 50%;
-            transform: translate(-100%, -50%) rotate(90deg);
+            right: 50%; /* вместо left: 50% */
+    
+            transform: rotate(90deg);
+            transform-origin: 100% 50%; /* вращение от правого края */
+            
             transition: all 0.05s;
             transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
             border-radius: 3px;
         }
 
         .second-hand{
-            width: 45%;
+            width: 43%;
             height: 2px;
         }
         .hour-hand{
@@ -135,7 +136,7 @@ html{
             height: 6px;
         }
         .min-hand{
-            width: 40%;
+            width: 36%;
             height: 3px;
         }
         .center{
@@ -187,4 +188,25 @@ button:hover {
     color: white;
 
     z-index: -1;
+}
+
+.numbers{
+    position:absolute;
+    inset:0;
+    color: white;
+    
+}
+
+.numbers span {
+    position:absolute;
+    inset:0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 3rem;
+    transform: rotate(calc(30deg* var(--i)));
+
+}
+.numbers span b{
+    transform: rotate(calc(-30deg* var(--i)));
 }
