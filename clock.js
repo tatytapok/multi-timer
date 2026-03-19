@@ -1,5 +1,5 @@
- const audio = document.querySelector('audio')
-        audio.volume = 0.1;
+// const audio = document.querySelector('audio')
+//        audio.volume = 0.1;
 let secondHand = document.querySelector('.second-hand');
 let minsHand = document.querySelector('.min-hand')
 let hoursHand = document.querySelector('.hour-hand')
@@ -8,12 +8,16 @@ const timerButton = document.querySelector('.timer-start')
 const stopwatchDisplay = document.querySelector('.stopwatch-display')
 const timerDisplay = document.querySelector('.timer-display')
 const clockFace = document.querySelector('.clock-face')
-let interval = null
+const addStopwatch = document.querySelector('.add-stopwatch')
+const stopwatchDisplayes = document.querySelector('.stopwatch-displayes')
+let stopwatches = []
 let isRuning = false
-let startTime =0
 let progress =0
 let analogTime= null
 let isAnalogMode = true // по умолчанию аналоговые часы
+
+
+// CLOCK DIGITAL ANGANALOG
 
 function startAnalogClock(){
     if(analogTime)clearInterval(analogTime)
@@ -47,8 +51,8 @@ function setDate(){
 
     secondHand.style.transform = `rotate(${secondsDegrees}deg)`;
 
-    audio.currentTime = 0;
-    audio.play();
+    //audio.currentTime = 0;
+   // audio.play();
 
     const minutes = now.getMinutes();
     const minutesDegrees = ((minutes / 60) * 360) + 90;
@@ -68,8 +72,6 @@ let isDigitalMode = false
 let digitalTime = null
 
 function modernClock(){
-
-    console.log('this is future')
     if(!isDigitalMode){
         // сохраняем html кконтент для  clock-face 
         if(!clockFace.hasAttribute('data-original-content')){
@@ -93,6 +95,7 @@ function modernClock(){
     //clock name
     const clockName = document.createElement('div')
     clockName.className = 'clock-name name glass'
+    clockName.innerHTML= 'Clock'
 
     // доб. эл-ты в контейнер 
     digitalContent.appendChild(clockDisplay)
@@ -140,18 +143,142 @@ function setDigitalClock(displayElement){
     displayElement.textContent = `${hours}:${minutes}:${seconds}`
 }
 
+clockFace.addEventListener('click', modernClock)
 
 
-function updateDisplay(ms){
-    console.log('display')
+// DISPLAY CHANGING FORSTOPWATCH AND TIMER
+
+function formateTime(ms){
     const totalSeconds = Math.floor(ms/1000)
     //padstart строка всегда будет иметь заданную длину
     //даже если чисто однозначное в начале приконкатенируется 0 
     const hours = String(Math.floor(totalSeconds/ 3600)).padStart(2,'0')
     const minuets = String(Math.floor((totalSeconds% 3600)/60)).padStart(2,'0')
     const seconds = String(totalSeconds% 60).padStart(2,'0')
-    stopwatchDisplay.textContent = `${hours}:${minuets}:${seconds}`
+    return`${hours}:${minuets}:${seconds}`
 }
+
+function updateDisplay(element,ms){
+    element.textContent = formateTime(ms)
+
+}
+
+// TIMER FUNCTIONAL
+//create timewheel функционал для красивого перетягивания значений таймера 
+function initTimeWheel(){
+    const hoursEl = document.querySelector('#hours')
+    const minutesEl = document.querySelector('#minutes')
+    const secondsEl = document.querySelector('#seconds')
+    
+    let activeSegment = null
+    let startY = 0;
+
+    let isDragging = false;
+
+    //timer value 
+    const values= {
+        hours: 0,
+        minutes: 0,
+        seconds:0
+    }
+
+    function updateDisplay(segment, value){
+        const formattedValue = value.toString().padStart(2,'0')
+        document.getElementById(segment).textContent= formattedValue
+    }
+    
+    //calculate new values
+    function calculateNewValue(segment, delta){
+        const limits ={
+            hours:{max: 23},
+            minutes:{max: 59},
+            seconds:{max: 59}
+        }
+
+        // to infinity value cicle 
+        const limit = limits[segment].max +1
+        
+        let currentValue = values[segment]
+
+        let newValue = (currentValue + delta)% limit
+        
+        //if value <0
+        if (newValue < 0){
+            newValue +=limit
+        }
+
+        return newValue
+    }
+
+    function startDrag(e, segmentId){
+        // preventDefault() метод отменяет только физическое действие браузера — 
+        // переход, отправку, прокрутку, — но не останавливает само событие.
+        e.preventDefault()
+        activeSegment = segmentId
+        startY = e.clientY
+       
+        isDragging = true 
+        document.getElementById(segmentId).classList.add('active')
+
+    }
+
+    let accumulateDelta = 0
+    const stepSize =100
+    let lastUpdate = 0
+    const delay = 50 // мс
+
+    function onDrag(e){
+        const now = Date.now()
+        if (now - lastUpdate < delay) return
+        lastUpdate = now
+        if(!isDragging || !activeSegment) return
+
+        e.preventDefault()
+
+        const deltaY = startY - e.clientY
+        accumulateDelta +=deltaY
+        let steps = Math.floor(accumulateDelta / stepSize)
+
+        steps = Math.sign(steps) * Math.floor(Math.abs(steps) ** 0.8)
+
+        if (Math.abs(steps) > 1) {
+        steps = Math.sign(steps)
+}
+
+        if (steps!== 0){
+            const newValue = calculateNewValue(activeSegment, steps)
+            values[activeSegment] = newValue
+            updateDisplay(activeSegment, newValue)
+
+
+            accumulateDelta = steps * stepSize
+        }
+        startY= e.clientY
+    }
+
+    function stopDrag(){
+        if (isDragging){
+            document.getElementById(activeSegment)?.classList.remove('active')
+            isDragging = false 
+            activeSegment = null
+        }
+    }
+
+
+    [hoursEl, minutesEl, secondsEl].forEach(el=>{
+        el.addEventListener('mousedown', (e)=> startDrag(e, el.id))
+    })
+
+    document.addEventListener('mousemove',onDrag)
+    document.addEventListener('mouseup', stopDrag)
+    document.addEventListener('mouseleave',stopDrag)
+
+
+    document.addEventListener('dragstart', (e)=>e.preventDefault())
+    console.log(values)
+}
+
+document.addEventListener('DOMContentLoaded',initTimeWheel)
 
 function setTimer(){
     console.log("timer")
@@ -160,46 +287,44 @@ function setTimer(){
 function timerProgress(){
     console.log("progress")
 }
-function setStopwatch(){
-        startTime = Date.now()
 
-        interval = setInterval(()=>{
-        const elapsed = Date.now() - startTime
-        updateDisplay(elapsed)
-    }, 1000)
+
+function createTimer(displayElement){
+        let interval = null
+        let startTime = 0
+
+        return{
+            start(){
+                startTime = Date.now()
+
+                interval = setInterval(()=>{
+                const elapsed = Date.now() - startTime
+                updateDisplay(displayElement,elapsed)
+            }, 100)
+            },
+
+            stop(){
+                clearInterval(interval)
+            },
+
+            reset(){
+                clearInterval(interval)
+                displayElement.textContent= '00:00:00'
+
+            },
+
+            destroy(){
+                this.stop()
+                displayElement.remove()
+            }
+        }       
 }
 
-function stopwatchProgress(){
-    console.log('Stopwatchprogress')
-
-}
-
-function reset(display, button){
-    isRuning= false
-
-    clearInterval(interval)
-    interval=null
-
-    display.textContent= '00:00:00'
-    button.textContent ='Start'
-
-    progress =0
-}
-stopwatchButton.addEventListener('click',() =>{
-    if(!isRuning){ 
-        isRuning =true
-        stopwatchButton.textContent ='Stop'
-        setStopwatch() 
-        stopwatchProgress()
-    }else{
-         reset(stopwatchDisplay, stopwatchButton)
-    }
-})
 
 timerButton.addEventListener('click',()=>{
     if(!isRuning){
         isRuning =true
-        timerButton.textContent = 'Stop'
+        
         setTimer()
         timerProgress()
     }else{
@@ -207,4 +332,108 @@ timerButton.addEventListener('click',()=>{
     }
 })
 
-clockFace.addEventListener('click', modernClock)
+
+//STOPWATCH FUNCTIONAL
+
+function createStopwatch(displayElement){
+        let interval = null
+        let startTime = 0
+
+        return{
+            start(){
+                startTime = Date.now()
+
+                interval = setInterval(()=>{
+                const elapsed = Date.now() - startTime
+                updateDisplay(displayElement,elapsed)
+            }, 100)
+            },
+
+            stop(){
+                clearInterval(interval)
+            },
+
+            reset(){
+                clearInterval(interval)
+                displayElement.textContent= '00:00:00'
+
+            },
+
+            destroy(){
+                this.stop()
+                displayElement.remove()
+            }
+        }       
+}
+
+function stopwatchProgress(){
+    console.log('Stopwatchprogress')
+
+}
+
+let mainStopwatch = createStopwatch(stopwatchDisplay)
+stopwatches.push(mainStopwatch)
+
+stopwatchButton.addEventListener('click',() =>{
+    if(!isRuning){ 
+        isRuning =true
+        stopwatchButton.textContent ='Stop'
+        mainStopwatch.start()
+    }
+    
+    else{
+        isRuning = false
+        stopwatchButton.textContent = 'Start'
+        mainStopwatch.reset()
+
+        stopwatches
+            .filter(sw => sw !== mainStopwatch)
+            .forEach(sw => sw.destroy())
+
+        
+    }
+})
+
+
+function addStopwatchDisplay(){
+    const nextDisplay = document.createElement('div')
+    nextDisplay.className = 'display stopwatch-display next-stopwatch-display'
+    stopwatchDisplayes.appendChild(nextDisplay)
+
+    //add stopwatch
+    const stopwatch = createStopwatch(nextDisplay)
+
+    stopwatches.push(stopwatch)
+
+    stopwatch.start()
+
+        
+    function removeStopwatch(){
+        stopwatch.destroy()
+        // удаляем из массива
+        stopwatches = stopwatches.filter(sw => sw !== stopwatch)
+}
+
+    nextDisplay.addEventListener('click', () =>{
+        removeStopwatch(stopwatch)
+    })
+
+    return stopwatch
+
+}
+
+stopwatchDisplay.addEventListener('click',  () =>{
+    mainStopwatch.reset()
+})
+
+
+
+addStopwatch.addEventListener('click', ()=>{
+    if(!isRuning){ 
+        isRuning =true
+        stopwatchButton.textContent ='Stop'
+        mainStopwatch.start()
+    }else{
+        addStopwatchDisplay()
+    }
+    })

@@ -67,19 +67,56 @@ html{
         right: -17px;         
         bottom: -17px; 
 
-        border: 7px solid;
+        border: 5px solid;
         border-radius: 50%;  
 
         transform: rotate(-45deg);  
-        pointer-events: none;  
+        
     }
 
+
     .timer-progress-bar{
-        border-color: rgb(47,123,255);
+        position: absolute;  
+        inset: -20px;
+        
+
+        border-radius: 50%;
+        
+        background: conic-gradient(
+            rgb(82, 97, 236) 0deg -100deg,
+            transparent 300deg 360deg
+        );
+
+        mask: radial-gradient(
+            farthest-side,
+            transparent calc(100% - 9px),
+            black calc(100% - 9px)
+        );
+    }
+
+    .clock-progress-bar{
+        color: rgb(93, 93, 93);
+        
     }
     
     .stopwatch-progress-bar{
-        border-color: rgb(217, 32, 59);
+        transform: scaleX(-1) rotate(-45deg);
+        position: absolute;  
+        inset: -20px;
+        
+
+        border-radius: 50%;
+        
+        background: conic-gradient(
+            rgb(214, 61, 61) 0deg -100deg,
+            transparent 300deg 360deg
+        );
+
+        mask: radial-gradient(
+            farthest-side,
+            transparent calc(100% - 9px),
+            black calc(100% - 9px)
+        );
     }
 
     .secondary-container{
@@ -96,6 +133,17 @@ html{
         border: 1px solid white;
         padding: 5px  20px;
         border-radius: 20px;  
+
+    }
+    .display:hover{
+        cursor: pointer;
+    }
+
+    .stopwatch-displayes{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
     }
         
         .face{
@@ -171,8 +219,41 @@ button:hover {
     background-color: rgba(255, 255, 255, 0.326);
     color: black;
 }
+
+.timer-buttons{
+    display: flex;
+    justify-content: center;
+    justify-content: space-around;
+    gap: 10px;
+
+    
+}
+
+.segment {
+    transition: transform 0.15s ease, color 0.15s ease;
+    cursor: ns-resize;
+    user-select: none;
+}
+.timer-start, .timer-stop{
+    padding: 10px;
+    
+    line-height: 1; /*Уменьшает высоту линии*/
+    border-radius: 20px;
+    font-size: 4rem;
+}
+.timer-stop{
+    padding-right: 16.5px;
+    padding-left: 16.5px;
+}
+.add{
+    padding: 10px;
+    line-height: 0.5; /*Уменьшает высоту линии*/
+    border-radius: 100%;
+    font-size: 7rem;
+}
+
 .name{
-    padding: 5px 20px;
+    padding: 5px 20px 5px;
     font-size: 3rem;
     color: white;
     letter-spacing: 13px;
@@ -209,4 +290,23 @@ button:hover {
 }
 .numbers span b{
     transform: rotate(calc(-30deg* var(--i)));
+}
+.digital-content{
+    display: contents;
+    justify-content: center;
+}
+
+.clock-name{
+    color: white;
+}
+.clock-name::before{
+    content: 'Clock';
+
+    position: absolute;
+    inset: 0;
+
+    filter: blur(1rem);
+    color: white;
+
+    z-index: -1;
 }

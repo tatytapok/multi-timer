@@ -1,26 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Интерактивный таймер</title>
+    <style>
+        .timer {
+            display: flex;
+            font-family: monospace;
+            font-size: 48px;
+            gap: 5px;
+            user-select: none;
+        }
+        .segment {
+            padding: 10px;
+            cursor: ns-resize;
+            background: #f0f0f0;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .segment:hover {
+            background: #e0e0e0;
+        }
+        .segment.active {
+            background: #d0d0d0;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+    </style>
 </head>
 <body>
-    <progress id="countdown" value="10" max="10"></progress> <!-- Прогресс заполнения -->
-    
+    <div class="timer">
+        <span class="segment" id="hours">00</span>
+        <span>:</span>
+        <span class="segment" id="minutes">00</span>
+        <span>:</span>
+        <span class="segment" id="seconds">00</span>
+    </div>
+
     <script>
-    let time = 10; // Начинаем с 10
-    const timer = setInterval(() => {
-    const countdownElement = document.getElementById('countdown'); // Наблюдаем за полосой прогресса
-    if(time >= 0) {
-        countdownElement.value = time--; // Заполняем полосу прогресса
-    } else {
-        clearInterval(timer); // Полностью останавливаем таймер
-        countdownElement.textContent = 'Отсчёт завершён!'; // Сообщение о завершении
-    }
-    }, 1000);
+        class TimerWheel {
+            constructor() {
+                this.hoursEl = document.getElementById('hours');
+                this.minutesEl = document.getElementById('minutes');
+                this.secondsEl = document.getElementById('seconds');
+                
+                this.activeSegment = null;
+                this.lastY = 0;
+                this.accumulatedDelta = 0;
+                
+                this.values = {
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Добавляем обработчики для каждого сегмента
+                [this.hoursEl, this.minutesEl, this.secondsEl].forEach(el => {
+                    el.addEventListener('mousedown', (e) => this.startDrag(e, el.id));
+                });
+                
+                // Глобальные обработчики для отслеживания движения мыши
+                document.addEventListener('mousemove', (e) => this.onDrag(e));
+                document.addEventListener('mouseup', () => this.stopDrag());
+                
+                // Предотвращаем выделение текста при перетаскивании
+                document.addEventListener('dragstart', (e) => e.preventDefault());
+            }
+            
+            startDrag(e, segmentId) {
+                e.preventDefault();
+                this.activeSegment = segmentId;
+                this.lastY = e.clientY;
+                this.accumulatedDelta = 0;
+                
+                // Добавляем визуальный индикатор активного сегмента
+                document.getElementById(segmentId).classList.add('active');
+            }
+            
+            onDrag(e) {
+                if (!this.activeSegment) return;
+                
+                e.preventDefault();
+                
+                // Вычисляем направление движения
+                const deltaY = this.lastY - e.clientY;
+                this.accumulatedDelta += deltaY;
+                
+                // Обновляем значение при накоплении достаточного движения
+                if (Math.abs(this.accumulatedDelta) >= 5) {
+                    const direction = this.accumulatedDelta > 0 ? 1 : -1;
+                    this.updateValue(this.activeSegment, direction);
+                    this.accumulatedDelta = 0;
+                }
+                
+                this.lastY = e.clientY;
+            }
+            
+            stopDrag() {
+                if (this.activeSegment) {
+                    document.getElementById(this.activeSegment).classList.remove('active');
+                    this.activeSegment = null;
+                }
+            }
+            
+            updateValue(segment, direction) {
+                const limits = {
+                    hours: { max: 23, format: '2-digit' },
+                    minutes: { max: 59, format: '2-digit' },
+                    seconds: { max: 59, format: '2-digit' }
+                };
+                
+                const limit = limits[segment].max + 1;
+                let currentValue = this.values[segment];
+                
+                if (direction > 0) { // Движение вверх
+                    currentValue = (currentValue + 1) % limit;
+                } else { // Движение вниз
+                    currentValue = (currentValue - 1 + limit) % limit;
+                }
+                
+                this.values[segment] = currentValue;
+                this.updateDisplay(segment, currentValue);
+            }
+            
+            updateDisplay(segment, value) {
+                const formattedValue = value.toString().padStart(2, '0');
+                document.getElementById(segment).textContent = formattedValue;
+            }
+        }
+        
+        // Инициализация таймера
+        const timer = new TimerWheel();
     </script>
-
-
 </body>
 </html>
