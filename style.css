@@ -38,6 +38,34 @@ html{
             min-height: 100vh;
             align-items: center;
         }
+
+
+        .notification{
+            position: fixed;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%б -10px);
+            opacity: 0;
+            font-size: 6rem;
+
+            padding: 15px 25px;
+            color: white;
+
+            border-radius: 10px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.show{
+            opacity: 1;
+            transform: translate(-50%, 10px);
+        }
+
+         .notification.hide{
+            opacity: 0;
+            transform: translate(-50%, 10px);
+        }
+
+
         .container{
              width: 100%;
             display: flex;
@@ -58,6 +86,8 @@ html{
                 inset 0 0 10px black,
                 0 0 10px rgba(0,0,0,0.2);       
         }
+
+
 
 
     .progress {
@@ -139,7 +169,7 @@ html{
         cursor: pointer;
     }
 
-    .stopwatch-displayes{
+    .stopwatch-displayes, .timer-displayes{
         display: flex;
         flex-direction: column;
         align-items: center;

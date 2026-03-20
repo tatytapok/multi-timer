@@ -4,14 +4,20 @@ let secondHand = document.querySelector('.second-hand');
 let minsHand = document.querySelector('.min-hand')
 let hoursHand = document.querySelector('.hour-hand')
 const stopwatchButton = document.querySelector('.stopwatch-start')
-const timerButton = document.querySelector('.timer-start')
+const timerStartButton = document.querySelector('.timer-start')
+const timerStopButton = document.querySelector('.timer-stop')
 const stopwatchDisplay = document.querySelector('.stopwatch-display')
 const timerDisplay = document.querySelector('.timer-display')
+const secondaryTimerDisplay = document.querySelector('.secondary-timer-display')
 const clockFace = document.querySelector('.clock-face')
 const addStopwatch = document.querySelector('.add-stopwatch')
 const stopwatchDisplayes = document.querySelector('.stopwatch-displayes')
+const timerDisplayes = document.querySelector('.timer-displayes')
+const notificationAudio = new Audio('notification.mp3')
 let stopwatches = []
+let timers = []
 let isRuning = false
+let timerIsRuning = false
 let progress =0
 let analogTime= null
 let isAnalogMode = true // по умолчанию аналоговые часы
@@ -153,9 +159,9 @@ function formateTime(ms){
     //padstart строка всегда будет иметь заданную длину
     //даже если чисто однозначное в начале приконкатенируется 0 
     const hours = String(Math.floor(totalSeconds/ 3600)).padStart(2,'0')
-    const minuets = String(Math.floor((totalSeconds% 3600)/60)).padStart(2,'0')
+    const minutes = String(Math.floor((totalSeconds% 3600)/60)).padStart(2,'0')
     const seconds = String(totalSeconds% 60).padStart(2,'0')
-    return`${hours}:${minuets}:${seconds}`
+    return`${hours}:${minutes}:${seconds}`
 }
 
 function updateDisplay(element,ms){
@@ -163,8 +169,44 @@ function updateDisplay(element,ms){
 
 }
 
+function showNotification(text){
+    const el = document.createElement('div')
+    el.textContent = text
+    el.classList.add('notification', 'glass')
+    
+    
+
+    document.body.appendChild(el)
+
+    requestAnimationFrame(()=>{
+        el.classList.add('show')
+    })
+
+    setTimeout(()=>{
+        el.classList.remove('show')
+        el.classList.add('hide')
+
+        setTimeout(()=>{
+            el.remove()
+        },300)
+    },2000)
+}
 // TIMER FUNCTIONAL
 //create timewheel функционал для красивого перетягивания значений таймера 
+
+function updateTimerDisplay(element, ms){
+    const totalSeconds = Math.floor(ms/1000)
+    
+    const hours = Math.floor(totalSeconds/ 3600)
+    const minutes = Math.floor((totalSeconds% 3600)/60)
+    const seconds = totalSeconds% 60
+    element.textContent =
+    `${hours.toString().padStart(2,'0')}:`+
+    `${minutes.toString().padStart(2,'0')}:`+
+    `${seconds.toString().padStart(2,'0')}`
+}
+
+
 function initTimeWheel(){
     const hoursEl = document.querySelector('#hours')
     const minutesEl = document.querySelector('#minutes')
@@ -276,9 +318,28 @@ function initTimeWheel(){
 
     document.addEventListener('dragstart', (e)=>e.preventDefault())
     console.log(values)
+    return {
+        getValues:() =>({...values})
+    }
 }
 
-document.addEventListener('DOMContentLoaded',initTimeWheel)
+let wheel
+let mainTimer
+
+document.addEventListener('DOMContentLoaded', () => {
+    wheel = initTimeWheel()
+
+    mainTimer = createTimer(secondaryTimerDisplay, ()=>{
+        showNotification('Time arived!')
+        timerIsRuning = false
+        notificationAudio.play().catch(()=>{})
+    })
+});
+
+
+function getToMilliseconds(values){
+    return( values.hours *3600 + values.minutes*60 + values.seconds)*1000
+}
 
 function setTimer(){
     console.log("timer")
@@ -289,17 +350,30 @@ function timerProgress(){
 }
 
 
-function createTimer(displayElement){
+function createTimer(displayElement,onComplete){
         let interval = null
         let startTime = 0
+        let duraction = 0
 
         return{
             start(){
+                duraction = getToMilliseconds(wheel.getValues())
                 startTime = Date.now()
 
                 interval = setInterval(()=>{
                 const elapsed = Date.now() - startTime
-                updateDisplay(displayElement,elapsed)
+                const remaining = duraction - elapsed
+
+
+                if(remaining<=0){
+                    this.stop()
+                    updateTimerDisplay(displayElement,0)
+
+                    if(onComplete) onComplete()
+                    return
+
+                }
+                updateTimerDisplay(displayElement,remaining)
             }, 100)
             },
 
@@ -309,7 +383,7 @@ function createTimer(displayElement){
 
             reset(){
                 clearInterval(interval)
-                displayElement.textContent= '00:00:00'
+                updateTimerDisplay(displayElement,0)
 
             },
 
@@ -317,19 +391,65 @@ function createTimer(displayElement){
                 this.stop()
                 displayElement.remove()
             }
+
         }       
 }
 
+function addTimerDisplay(){
+    
+    const nextDisplay = document.createElement('div')
+    nextDisplay.className = 'display timer-display next-timer-display'
+    timerDisplayes.appendChild(nextDisplay)
 
-timerButton.addEventListener('click',()=>{
-    if(!isRuning){
-        isRuning =true
+    //add timer
+    const timer = createTimer(nextDisplay, ()=>{
+        showNotification("Time arived!")
+        notificationAudio.play().catch(()=>{})
+    })
+
+    timers.push(timer)
+
+    timer.start()
+
         
-        setTimer()
-        timerProgress()
-    }else{
-        reset(timerDisplay, timerButton)
+    function removeTimer(){
+        timer.destroy()
+        // удаляем из массива
+        timers = timers.filter(sw => sw !== timer)
+}
+
+    nextDisplay.addEventListener('click', () =>{
+        removeTimer(timer)
+    })
+
+    return timer
+
+}
+
+secondaryTimerDisplay.addEventListener('click',  () =>{
+    mainTimer.reset()
+})
+
+
+
+timerStartButton.addEventListener('click',()=>{
+    if(!timerIsRuning){
+        timerIsRuning =true
+        mainTimer.start()
     }
+    
+    else{
+        addTimerDisplay()
+    }
+})
+
+timerStopButton.addEventListener('click', ()=>{
+    timerIsRuning = false
+    mainTimer.reset()
+
+    timers
+        .filter(sw => sw !== mainTimer)
+        .forEach(sw => sw.destroy())
 })
 
 
